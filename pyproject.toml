@@ -3,6 +3,8 @@ name = "PachLite"
 version = "0.1.0"
 description = ""
 authors = ["Jimmy Whitaker <jimmy@pachyderm.io>"]
+readme = "README.md"
+license = "Apache-2.0"
 
 
 [tool.poetry.dependencies]
