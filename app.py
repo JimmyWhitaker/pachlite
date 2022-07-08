@@ -69,38 +69,55 @@ def run(entrypoint, input, entrypoint_args):
     )
 )
 @click.option("-n", "--name", prompt="Pipeline Name", help="Name of pipeline")
-@click.option("-d", "--description", prompt="Pipeline Description", help="Description of pipeline")
-@click.option("--image", prompt="Docker Image", help="Name of docker image to be used for the entrypoint")
 @click.option(
-    "-i",
-    "--input_repo",
-    help="Input repo(s) - format repo@branch",
-    multiple=True
+    "-d", "--description", prompt="Pipeline Description", help="Description of pipeline"
+)
+@click.option(
+    "--image",
+    prompt="Docker Image",
+    help="Name of docker image to be used for the entrypoint",
+)
+@click.option(
+    "-i", "--input_repo", help="Input repo(s) - format repo@branch", multiple=True
 )
 @click.option("--entrypoint", type=click.Path(exists=True))
 @click.argument("entrypoint_args", nargs=-1, type=click.UNPROCESSED)
 def build(name, description, image, input_repo, entrypoint, entrypoint_args):
     """Build pachyderm pipeline"""
-    if not name: 
+    if not name:
         click.echo(f"Enter pipeline name (ex. 'hello'): {name}")
     if not input_repo:
-        input_repo = input("Enter input repos (ex. images@master labels@master) : ").split()
-    
-    pipeline = {'pipeline':{'name':name}, 'description':description, 'input':{}, 'transform':{'image': image, 'cmd': 'python ' + str(entrypoint) + " " + str(" ".join(list(entrypoint_args)))}}
-    
+        input_repo = input(
+            "Enter input repos (ex. images@master labels@master) : "
+        ).split()
+        
+    cmd = ("python "
+            + str(entrypoint)
+            + " "
+            + str(" ".join(list(entrypoint_args)))).split()
+
+    pipeline = {
+        "pipeline": {"name": name},
+        "description": description,
+        "input": {},
+        "transform": {
+            "image": image,
+            "cmd": cmd,
+        },
+    }
+
     pipeline_inputs = []
     for i in input_repo:
         print(i)
         repo, branch = i.split("@")
-        pipeline_inputs.append({'pfs':{'repo':repo, 'branch':branch, 'glob':'/'}})
+        pipeline_inputs.append({"pfs": {"repo": repo, "branch": branch, "glob": "/"}})
 
-    if len(input_repo)>1:
-        pipeline['input'] = {'cross': pipeline_inputs}
+    if len(input_repo) > 1:
+        pipeline["input"] = {"cross": pipeline_inputs}
     else:
-        pipeline['input'] = pipeline_inputs[0]
-    
-    print(json.dumps(pipeline,sort_keys=True,
-    indent=4,separators=(',', ': ')))
+        pipeline["input"] = pipeline_inputs[0]
+
+    print(json.dumps(pipeline, sort_keys=True, indent=4, separators=(",", ": ")))
 
 
 cli.add_command(run)
